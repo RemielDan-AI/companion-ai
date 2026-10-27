@@ -1,0 +1,22 @@
+# MCP 服务器配置（模块三 改进 5 延伸）
+# 默认一个都不启用：要连 MCP 需要两处同时开
+#   1) 这里把某个服务器改成 enabled: true（并填好 command/args）
+#   2) config/tools.yaml 的 allow 里加上 mcp
+
+servers:
+  # 官方示例服务器（需要 node/npx）：
+  everything:
+    enabled: false
+    command: npx
+    args: ["-y", "@modelcontextprotocol/server-everything"]
+    tools: []            # 允许调用的工具名；空列表＝允许该服务器的全部工具
+    timeout: 30
+    env: { }
+
+  # 示例：把一个本地脚本当 MCP 服务器（stdio）
+  # local-tools:
+  #   enabled: true
+  #   command: python
+  #   args: ["C:\\path\\to\\your_mcp_server.py"]
+  #   tools: ["echo"]
+  #   timeout: 15

@@ -1,0 +1,17 @@
+id: E003
+name: 笔记
+kind: extension
+enabled: false
+description: 占位：还没做笔记功能（提醒技能可以先记下要办的事）
+triggers:
+  keywords: ["记笔记", "帮我整理笔记", "笔记", "摘录", "总结成笔记"]
+  patterns: ["(记|整理)(一下)?笔记"]
+  fallback: false
+executor:
+  type: none
+limits: {}
+refusal:
+  kind: soft
+  text: |-
+    专门的笔记功能还没做。不过你要是有件事怕忘，可以让我"提醒你"，
+    我会记下来；或者你直接说给我听，我也算记住了。

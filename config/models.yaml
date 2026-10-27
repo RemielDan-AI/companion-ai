@@ -1,0 +1,150 @@
+# 五个角色各自的模型、端口与显存分配（**界面「模型服务」页可直接改**）
+#
+# ## 为什么按"角色"而不是按"模型"来配
+#
+# 同一个模型可以担不同角色（9B 既能当思考模型、也能兼职判官），
+# 而**资源规划是按角色算的**——哪个角色常驻、哪个按需，直接决定内存够不够。
+#
+# ## 实测出来的资源账（本机 15.19 GB 内存 / 4 GB 显存）
+#
+#   常驻 3 个（chat + embed + memory）        剩 **5.66 GB**  ✅ 推荐
+#   再加 judge（4B，2.6 GB）                  剩 1.22 GB      能跑但紧
+#   再加 think（9B，5.2 GB）                  剩 0.44 GB      ⚠ 不划算
+#   五个全上                                  剩 0.03 GB      ✘ 会换页抖动
+#
+#   → **默认只常驻前三个**；think 和 judge 按需拉起。
+#
+# ## 各角色的分工
+#
+#   chat   对话主力（每轮都用）。当前是自训的 weiyang-v1.5。
+#   embed  向量嵌入（每轮检索都用）。bge-small，0.09 GB，忽略不计。
+#   memory 记忆抽取（每轮回复后跑）。Qwen3.5-2B，实测多跳 13/18 最好的那个。
+#   think  思考模型（难题才用）。Qwen3.5-9B，**任务绕一点 v1.5 转不过弯时要它**。
+#   judge  判官（第三道门：回复有没有超出证据）。**按需**。
+#
+# ## ⚠ 判官只能从 think / judge 里选，**不许用 memory(2B)**
+#
+#   实测同一批 12 例（专门挑"程序抓不到"的编造）：
+#       程序侧（数字+编前情）        抓到 0/6
+#       **2B（memory 兼职判官）**    召回 **50%**  ✘ 漏「你孩子上小学了吗」这种要推理的
+#       **4B（judge）**             召回 83%
+#       **9B（think 兼职判官）**     召回 **100%**
+#
+#   → `judge_prefer` 的顺序就是"谁在跑用谁"：**9B 在就用 9B，不用 4B**；
+#     两个都不在就**跳过接地判定**（宁可漏判，也不为一个默认关的门常驻 5 GB）。
+#
+# ⚠⚠ **这个文件是踩过坑的**：`models_config.save()/set_switch()` 原来用
+#    `yaml.safe_dump` 整份重写，**一勾开关就把这里所有注释抹掉**（实测发生两次）。
+#    现在两者都走**行级替换**（只改那一行），并且测试里也**不许**用 safe_dump 写它。
+
+# ---------------- 角色 → 模型 ----------------
+# model 写**文件名关键词**（`discover_models` 出的是 `file` 字段，即不带 .gguf 的 stem），
+# 用子串匹配，改起来不用写全路径。
+roles:
+  chat:
+    model: weiyang-v1.5-Q4_K_M
+    port: 8080
+    ngl: 20
+    ctx: 4096
+    resident: true  # 常驻
+    desc: 对话主力（每轮都用）
+    # 来源：local = 本地模型；api = 远程 API（必须过外发网关，见下方说明）
+    source: local
+    # ---- 走远程 API 时这样配（把上面 source 改成 api，并填下面几项）----
+    #   source: api
+    #   api_base: https://api.deepseek.com/v1      # 会拼成 …/v1/chat/completions
+    #   api_model: deepseek-chat
+    #   api_key_env: DEEPSEEK_API_KEY              # ⚠ **推荐**：配置里只写环境变量名
+    #   api_name: deepseek                         # 要出现在下面 api.yaml 的白名单里
+    #
+    # ⚠ **密钥不要明文写进配置**：优先用 api_key_env 指向环境变量。
+    #   直接写 api_key: sk-… 也支持，但等于把密钥放进仓库。
+    # ⚠ **走 API 必须过外发网关**（cloud/gateway.py + config/api.yaml）：
+    #   · enabled: false（默认）→ 一律拒绝，界面会显示配了但发不出去
+    #   · 还要 allow_api_for_chat: true 且 api_name 在 allowed_apis 里
+    #   原因：走 API 意味着对话内容、记忆块、人格提示都会发到外面，
+    #   profile/memory/values/history/persona 这些在网关里是**写死的永不外发**。
+    api_base: "https://example.invalid/v1"
+    api_model: some-model
+    
+    api_name: demo
+    api_key_env: COMPANION_TEST_KEY
+  embed:
+    model: bge-small-zh-v1.5-f16
+    port: 8081
+    ngl: 0
+    ctx: 512
+    resident: true
+    desc: 向量嵌入（每轮检索都用，只占 0.09 GB）
+    source: local
+  memory:
+    model: Qwen3.5-2B-Q4_K_M
+    port: 8083
+    ngl: 12  # ⚠ 12 是实测平衡点：纯 CPU(0) 比 12 慢 5 倍
+    ctx: 4096
+    resident: true
+    desc: 记忆抽取（每轮回复后跑）
+    source: local
+  think:
+    model: Qwen3.5-9B-UD-Q4_K_XL
+    port: 8085
+    ngl: 20
+    ctx: 4096
+    resident: false  # 按需：难题才拉起
+    desc: 思考模型（任务绕一点时用，也能兼职判官）
+    source: local
+  judge:
+    model: Qwen3-4B.Q4_K_M
+    port: 8084
+    ngl: 0  # 走 CPU：只吐几个字，够快，也不抢显存
+    ctx: 2048
+    resident: false
+    desc: 判官（第三道门：回复有没有超出证据）
+    source: local
+
+# ---------------- 开关（界面「模型服务」页可勾选，改完立即生效） ----------------
+switches:
+  # 启动界面时，自动把 **resident: true** 的三个角色拉起来（对话+嵌入+记忆）
+  autostart: false
+  # 关闭界面时，把**本次拉起的**服务全部停掉（不动你手动开的那些）
+  stop_on_exit: true
+  # **机会主义判官**：开启后「有思考模型就用思考模型，没有就用选定的判官模型」
+  #   · 开 → judge 候选 = [think, judge]，9B 在就用 9B（召回 100%）
+  #   · 关 → 只用「判官」那一行选的模型，不管思考模型在不在
+  opportunistic_judge: true
+  # **思考模型与判官模型互斥**：拉起思考模型前先关掉判官模型
+  #   理由（实测）：9B 占 5.2 GB、4B 占 2.6 GB，三个常驻已用 5.66 GB baseline，
+  #   两个同时上会把内存吃到见底（实测五个全上只剩 0.03 GB）。
+  #   它们**从不同时需要**，所以让后来者把先来者顶掉。
+  exclusive_think: true
+
+# ---------------- 思考模型的按需起停（用户 2026-10-21 要求） ----------------
+# 9B 常驻太贵：三个常驻已占 5.66 GB，再加 9B 只剩 0.44 GB（实测）。
+# 它只在难题时有用，所以「难题来了才起、空闲自动关」。
+auto_think:
+  enabled: false  # ⚠ 默认关：**起模型要实测 17 秒**，这一轮用户会真的等
+  min_level: l2           # 到这一档才起（l0/l1 的日常闲聊绝不能为它等十几秒）
+  idle_minutes: 10        # 空闲多久自动关掉（只关我们起的，手动开的不动）
+  # 拉起之后**它参与什么**——四种模式，按"风格损失"从低到高排：
+  #   judge_only  只当判官（召回 100% vs 4B 的 83%），**零风格风险**（写错时也退回它）
+  #   "off"       即使起了也不参与（**要加引号**：bare `off` 会被 YAML 当成布尔 False）
+  #   transfer    **9B 出内容、v1.5 转述成未央的口吻**（用户 2026-10-21 定的方案）
+  #               两边的长处都用上：任务能力来自 9B，说话声音来自微调过的 v1.5。
+  #               代价：**两次生成**（9B 答 + v1.5 转述），难题那一轮明显更慢。
+  #               ⚠ 转述可能丢事实或加东西 → 门②(数字)/门③(接地) 必须在**转述之后**跑，
+  #                 而且**把 9B 的草稿算进证据**（`app.py` 的 evidence 已并入
+  #                 `_think_draft`），否则它答对的数字会被判成编造。
+  #   generate    难题的回复**由 9B 直接生成**（不经转述）
+  #               ⚠ 9B 是**未微调原版**：自我约束 43/60（v1.5） vs **28/60（9B）**、
+  #                 平均 29.5 vs 约 110 字 —— 答得更对，但**说话不像未央**。
+  mode: transfer
+
+# ---------------- 判官的选择顺序（机会主义） ----------------
+# 谁正在跑就用谁，第一个能用的胜出；**都不在就跳过判定**。
+judge_prefer:
+  - think      # 9B 在 → 用它（召回 100%），**不看 4B**
+  - judge      # 9B 不在 → 退回 4B（召回 83%）
+# 明确禁用：memory(2B) 当判官只有 50% 召回，比不判好不了多少，还容易误伤
+judge_forbidden:
+  - memory
+  - chat

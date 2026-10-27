@@ -1,0 +1,14 @@
+id: S004
+name: 提醒
+kind: core
+enabled: true
+description: 记下对方要办的事（阶段 3 只做记录与确认，定时触发留给后续阶段）
+triggers:
+  keywords: ["提醒我", "别忘记", "记一下", "帮我记", "到时候提醒", "提醒一下"]
+  patterns: ["提醒我", "(帮我)?记(一下|下来|住)"]
+  fallback: false
+executor:
+  type: reminder
+limits:
+  max_tokens: 128
+refusal: {}

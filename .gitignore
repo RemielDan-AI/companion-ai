@@ -1,0 +1,56 @@
+# ---- 数据与记忆（**绝不入库**）----
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.jsonl
+cognition/vectors/
+data/
+
+# ---- 运行日志与测试产物 ----
+logs/
+samples/
+*.log
+_tmp/
+tests/_tmp/
+_shot_tmp/
+
+# ---- 开发日志（私人内容，不进仓库）----
+项目.txt
+结构.txt
+
+# ---- 素材：立绘等图片没有再分发授权 ----
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.psd
+
+# ---- 运行时状态 ----
+config/ai_profile.yaml
+config/presets.json
+config/presets.json.bak
+voice/ui_state.json
+voice/edge_voices.json
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+
+# ---- 编辑器 / 系统 ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ---- 本地密钥（只允许环境变量）----
+.env
+*.secret
+config/api.yaml.local

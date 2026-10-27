@@ -1,0 +1,39 @@
+# 价值观库的格式与规则（实际条目写在 values/values.yaml）
+#
+# 一条价值观的字段：
+#   id              编号 V001 起
+#   content         内容（用对方的口吻陈述，不超过 20 字）
+#   type            类型：决策原则 / 关系边界 / 沟通方式 / 生活态度 / 价值排序
+#   priority        优先级 1-5（冲突时按它排）
+#   confidence      置信度 0-1
+#   evidence_count  证据数（出现过几次）
+#   contexts        情境标签（跨情境升权用）
+#   status          candidate（候选）/ active（已生效）/ rejected / archived
+#   evidence        证据链：哪一轮、什么信号、原话
+#   created_at / updated_at
+
+types:
+  - 决策原则
+  - 关系边界
+  - 沟通方式
+  - 生活态度
+  - 价值排序
+
+rules:
+  new_confidence: 0.30        # 新候选的初始置信度
+  repeat_step: 0.10           # 同一情境再次出现的升权幅度
+  cross_context_step: 0.06    # 换一个情境出现，额外升权（跨情境更可信）
+  activate_threshold: 0.55    # 达到就自动生效，不再问（约"三个不同场合都说过"）
+  ask_threshold: 0.30         # 低于它只静静躺着，不主动确认
+  conflict_penalty: 0.15      # 与已有价值观冲突时，旧条降权
+  decay_step: 0.10            # 被对方否掉时的降权
+  archive_below: 0.12         # 低于它就归档
+  max_inject: 4               # 注入推理的最多条数（保持提示短）
+
+# 自然确认：置信度落在 ask_threshold..activate_threshold 之间、或有冲突时，
+# 下一轮会自然地确认一句（不直接说"价值观"三个字）
+confirm:
+  agree_words: ["对", "是的", "没错", "确实", "就是这样", "嗯，是", "差不多"]
+  disagree_words: ["不是", "没有", "才不是", "不完全是", "哪有", "想多了"]
+  agree_step: 0.18
+  disagree_step: 0.12

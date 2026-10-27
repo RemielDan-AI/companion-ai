@@ -1,0 +1,13 @@
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+# 只查未定义名/重复定义/未用导入这类**硬问题**。
+# 不开 ruff 的默认规则集：本项目大量使用"宽 except + 兜底"的写法是有意的
+# （宁可难看也不能打不开），默认规则里的 BLE001/S110 会全量误报。
+select = ["F", "E9"]        # E9 = 语法类错误
+
+[tool.ruff.lint.per-file-ignores]
+# 脚本/测试里允许局部导入（要在 sys.path 调整之后才 import）
+"tests/*" = ["E402"]

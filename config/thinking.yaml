@@ -1,0 +1,30 @@
+# 思考档位 —— L0 直觉 / L1 轻思 / L2 深思 / L3 深潜
+# 阶段 4 由深度路由器自动选档；阶段 1 手动指定，默认 l1
+
+default: l1
+
+levels:
+  l0:
+    name: 直觉
+    description: 脱口而出的日常快答
+    max_tokens: 128
+    temperature: 0.7
+    repeat_penalty: 1.15
+  l1:
+    name: 轻思
+    description: 日常对话，稍微过一下脑子
+    max_tokens: 384
+    temperature: 0.8
+    repeat_penalty: 1.15
+  l2:
+    name: 深思
+    description: 重要或复杂的事，认真想清楚再说
+    max_tokens: 640
+    temperature: 0.75
+    repeat_penalty: 1.15
+  l3:
+    name: 深潜
+    description: 两难、长期、深刻的问题，往深处想
+    max_tokens: 900
+    temperature: 0.7
+    repeat_penalty: 1.15

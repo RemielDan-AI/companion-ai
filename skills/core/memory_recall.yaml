@@ -1,0 +1,20 @@
+id: S003
+name: 记忆回顾
+kind: core
+enabled: true
+description: 对方问"你还记得吗"时，从记忆库里翻出来答
+triggers:
+  keywords: ["你还记得", "记不记得", "记得我说过", "我上次说", "我之前说过",
+             "我说过什么", "我提过", "我跟你说过"]
+  patterns: ["(还|你)记(得|不记得)", "我(之前|上次|以前)(说|提)"]
+  fallback: false
+executor:
+  type: memory_recall
+  level: l1
+  prompt: |-
+    对方在问过去的事。直接用你记得的内容回答，语气自然，像真的记得那样。
+    记得就具体说，不记得就老实说不记得、别编；不要罗列条目，不要提"记忆库"这三个字。
+limits:
+  top_k: 6
+  max_tokens: 320
+refusal: {}

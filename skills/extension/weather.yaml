@@ -1,0 +1,30 @@
+id: E001
+name: 天气
+kind: extension
+enabled: true
+description: 真实天气查询（open-meteo，免密钥）
+triggers:
+  keywords: ["天气", "下雨", "气温", "冷不冷", "要不要带伞", "多少度"]
+  patterns: []
+  fallback: false
+executor:
+  type: tool
+  prompt: |-
+    上面查到的是**某个城市**的实时天气，不是"对方所在的地方"——你并不知道对方在哪。
+    回答时**必须带上城市名**（就照查到的那个名字说），别把地点省掉，
+    否则对方会以为这是在说他那边的天气。
+    用上面查到的实时信息回答，不要编造数字；只说查到的内容，
+    再顺一句关心（带伞、加衣这种），别把数据念一遍。
+  tool:
+    type: local
+    name: weather
+    permission: network
+    timeout: 12
+    retries: 1
+limits: {}
+refusal:
+  kind: soft
+  text: |-
+    天气我这儿没查到——可能是网断了或者没认出城市名。
+    你说个城市名我再试一次；不想查也行，你说说窗外什么样，我陪你猜。
+    （猜不出城市时我会用**默认城市**查，但一定把城市名说出来，不会默认成你在的地方。）

@@ -1,0 +1,55 @@
+# 语音合成（TTS）配置 —— 本项目不内置模型，只做接口兼容
+#
+# 四种后端：gsv（本地 GSV / GPT-SoVITS）| edge（微软 Edge TTS，需联网）|
+#          openai（OpenAI 兼容 /v1/audio/speech）| command（任意命令行兜底）
+# 窗口程序 gui.py 里可以直接切换后端、选 Edge 声音、选 GSV 语言。
+
+enabled: false          # 默认关：不然每轮回复都会合成一遍，调试时再打开
+autoplay: false         # 合成完自动播放（/say 命令始终会播）
+backend: gsv            # gsv | edge | openai | command
+output_dir: voice/out
+text_max_chars: 300     # 超长先截断，避免合成半天
+max_play_seconds: 120   # 单段朗读的最长播放时间（兜底：播放器卡住也不会一直占着）
+
+edge:                   # 微软 Edge TTS：在线合成，需要联网，声音可选
+  voice: zh-CN-XiaoxiaoNeural
+  rate: "+0%"           # 语速，例如 +10% / -10%
+  volume: "+0%"
+  pitch: "+0Hz"
+  timeout: 120
+
+gsv:
+  base_url: http://127.0.0.1:9880
+  # 实测 GSV-TTS-Lite：只有 v2（POST JSON）能用，v1（GET query）会报
+  # "ref_audio_path is required"。换别的 GSV 版本时可以改回 auto。
+  api: v2
+  # 参考音频与对应文本：GSV 需要它来确定音色。
+  # 下面这组取自你 GSV-TTS-Lite 的音色预设（酒狐）：sound/idle50.wav + 它的日语文本。
+  # 注意：GSV-TTS-Lite 的 auto_asr 是关的，prompt_text 必须填，否则会报 500。
+  ref_audio_path: C:\TTS\GSV-TTS-Lite\sound\idle50.wav
+  prompt_text: どうしました私があまり可愛いからびっくりしちゃったんですか
+  prompt_lang: ja       # v2 参数名（参考音频是日语）
+  prompt_language: ja   # v1 参数名（api.py 用的是这个）
+  text_lang: auto       # auto / zh / ja / en（本版服务只支持这四个）
+  text_language: auto
+  # 说明：GSV-TTS-Lite 的 /tts 会接收 text_lang 但不往下传，实际永远走 auto。
+  # 它的 auto 自动识别很准（实测 日文→ja、中文→zh、英文→en），所以日文文本能被正确朗读；
+  # 若要让下拉框能"强制"指定读音，需要给 personal_api.py 打补丁：
+  #   python tools/patch_gsv_language.py
+  text_split_method: cut5
+  media_type: ogg       # 实测该服务固定返回 Ogg Vorbis（我们按魔数自动识别后缀）
+  streaming_mode: false
+  speed: 1.0
+  extra: {}             # 其它参数原样带过去（如 top_k / temperature / seed）
+  timeout: 300          # 首次请求要加载权重，给足时间
+
+openai:                 # 任何 OpenAI 兼容的 /v1/audio/speech（如本地 GPT-SoVITS 包装层）
+  base_url: http://127.0.0.1:8000/v1/audio/speech
+  model: tts-1
+  voice: alloy
+  api_key: ""
+  timeout: 120
+
+command:                # 兜底：任意命令行 TTS，模板里 {text} 和 {out} 会被替换
+  template: ""
+  timeout: 120

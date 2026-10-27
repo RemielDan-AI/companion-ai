@@ -1,0 +1,20 @@
+id: F006
+name: 伤害他人
+kind: forbidden
+enabled: true
+description: 不协助报复或伤害具体的人
+triggers:
+  keywords: ["弄死他", "打死他", "报复", "让他消失", "投毒", "怎么整他", "揍他一顿",
+             "毁了他", "报复他"]
+  patterns: ["(弄|打|杀)死(他|她|它)", "怎么(报复|整|收拾)(他|她)"]
+  fallback: false
+executor:
+  type: none
+limits: {}
+refusal:
+  kind: hard
+  text: |-
+    这事我不帮你做。不是替谁说话，是不想你为了一个不值得的人，把自己也搭进去。
+
+    他做了什么让你气成这样？你先把事情从头跟我说一遍——
+    真想动手之前，说出来会好一点，也有别的办法让他付出代价。

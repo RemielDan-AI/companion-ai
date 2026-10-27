@@ -1,0 +1,26 @@
+# 模型与推理服务配置
+#
+# 当前主力：GPT-5-Distill-Qwen3-4B-Instruct-Heretic.Q4_K_M（未微调版），
+#          由 启动llm-Heretic.bat 经 launcher.py 以 llama-server 启动（端口 8080）。
+#          自训的 weiyang-v1 / v1.2 是它的微调后代，用 启动模型.bat 或 launcher
+#          的 --alias weiyang 切换。
+#
+# 关于「官方版」：Qwen3-4B.Q4_K_M 是**约束基线**——它的助手腔最重（实测 37%），
+#          留作中文交流能力的参照与横评对象，不是当前对话主力。
+#          （本项目早期阶段曾以它为主力，注释已按现状更新。）
+#
+# 本文件只放与模型无关的公共项；具体跑哪个模型、什么采样参数由启动器与
+# config/thinking.yaml 决定（后者按 l0-l3 档位给 temperature / max_tokens）。
+
+api_url: http://127.0.0.1:8080/v1/chat/completions
+
+# 短期上下文保留的轮数（1 轮 = 1 问 1 答）。长对话靠记忆库，不靠无限堆上下文，
+# 这样 4096 的上下文窗口不会被历史撑爆。
+history_turns: 6
+
+# Qwen3 系列默认开启思考模式，正文会写进 reasoning_content 导致 content 为空。
+# 当前主力与自训版都是 **qwen3 基座**（Heretic / weiyang-v1 / v1.2 元数据均为 qwen3），
+# 所以这一段**必须保留**；换成非 Qwen3 模型时才删掉。
+extra_body:
+  chat_template_kwargs:
+    enable_thinking: false

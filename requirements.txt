@@ -1,0 +1,9 @@
+# 运行必需的第三方依赖（从代码里的 import 逐个扫出来的，不是猜的）
+#
+#   PyYAML  24 个文件在用（所有 config/*.yaml 的读写）
+#   Pillow   5 个文件在用（界面贴立绘、自绘形象、截图）
+#
+# 可选依赖见 requirements-optional.txt
+
+PyYAML>=6.0
+Pillow>=9.0

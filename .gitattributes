@@ -1,0 +1,28 @@
+# 统一换行符，避免不同平台/不同工具提交出"整文件全变"的假 diff
+#
+# 背景：仓库里曾经混进过一次 CRLF——因为某个提交不是走 `git commit`
+# 而是直接把磁盘原始字节塞进了 Git Data API 的 blob，绕过了 core.autocrlf。
+# 结果同一个文件在两个提交里一个 LF 一个 CRLF，`git diff` 显示 6878 行全改。
+#
+# 约定：**仓库里一律 LF**；`*.bat` 例外（Windows 批处理用 LF 会出问题）。
+
+* text=auto eol=lf
+
+# Windows 批处理必须是 CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 二进制：别做任何转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.gguf binary
+*.db binary
+*.sqlite binary
+*.webm binary
+*.wav binary
+*.mp3 binary
+*.pt binary
+*.bin binary

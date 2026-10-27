@@ -1,0 +1,20 @@
+# 云端 API 配置（项目改进v1 模块三 改进 6-9）
+# 默认姿态：全部关闭。要用必须自己改这里（改完重启程序生效）。
+
+enabled: false  # 总开关：false 时不加载/不调用任何云端能力
+allow_api_for_chat: false  # 用云端生成对话回复（默认禁止，必须手动开）
+allow_api_for_tools: true      # 云端只做非对话任务（翻译、摘要这类）
+
+allowed_apis: []
+outbound_whitelist:            # 允许外发的字段（只有这些会被发出去）
+  - task_text
+redact: true  # 外发前脱敏：手机号/邮箱/证件号/长数字
+
+budget:
+  max_calls_per_day: 0  # 0 表示不限制（但 allowed_apis 为空时仍然调不出去）
+  max_chars_per_call: 1200     # 单次外发内容上限
+
+timeout: 20
+
+# 说明：profile / memory / values / history / persona 等字段写死在代码里禁止外发，
+# 即使加进 outbound_whitelist 也不会发出去（见 cloud/gateway.py 的 NEVER_OUTBOUND）。

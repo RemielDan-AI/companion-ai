@@ -1,0 +1,14 @@
+# 工具权限策略（项目改进v1 模块三 改进 5）
+# 技能要调用外部工具，必须先在这里开权限——默认最小权限。
+
+allow:
+  - local          # 本地函数工具（tools/builtin.py）
+  - network        # 联网查数据（如天气），要联网的技能才需要
+#  - local_exec     # 执行本地命令行（危险，默认不给）
+#  - cloud          # 调云端 API（模块三改进 6-9，默认关闭）
+
+command_allowlist: []    # 命令行工具白名单：留空＝一个命令都不许执行
+
+timeout: 12
+retries: 1
+max_result_chars: 600

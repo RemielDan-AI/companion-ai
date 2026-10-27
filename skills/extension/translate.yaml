@@ -1,0 +1,17 @@
+id: E002
+name: 翻译
+kind: extension
+enabled: false
+description: 占位：还没接翻译能力
+triggers:
+  keywords: ["翻译", "用英语怎么说", "翻成英文", "日文怎么说"]
+  patterns: ["翻译(一下|成)?", "用(英语|英文|日语|韩语).*怎么说"]
+  fallback: false
+executor:
+  type: none
+limits: {}
+refusal:
+  kind: soft
+  text: |-
+    正经的翻译我还没学会，怕翻错反而耽误你。
+    要是短句子、你只是想听个大概，我可以试试；要准确的话，先别信我。

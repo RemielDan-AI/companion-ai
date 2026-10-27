@@ -1,0 +1,14 @@
+id: S001
+name: 闲聊陪伴
+kind: core
+enabled: true
+description: 兜底的日常聊天与陪伴
+triggers:
+  keywords: ["聊聊", "在吗", "无聊", "陪我说说话"]
+  patterns: []
+  fallback: true
+executor:
+  type: llm
+  prompt: ""        # 不写 level：交给深度路由器按问题难度自动选档
+limits: {}          # 也不写 max_tokens：长度由档位和风格引擎决定
+refusal: {}
